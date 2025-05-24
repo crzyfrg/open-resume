@@ -3,6 +3,7 @@ import { Provider } from "react-redux";
 import { store } from "lib/redux/store";
 import { ResumeForm } from "components/ResumeForm";
 import { Resume } from "components/Resume";
+import JobDescriptionForm from "components/JobDescriptionForm";
 
 export default function Create() {
   return (
@@ -11,6 +12,7 @@ export default function Create() {
         <div className="grid grid-cols-3 md:grid-cols-6">
           <div className="col-span-3">
             <ResumeForm />
+            <JobDescriptionForm />
           </div>
           <div className="col-span-3">
             <Resume />
