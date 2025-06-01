@@ -2,7 +2,7 @@ import type {
   TextItem,
   FeatureSet,
   ResumeSectionToLines,
-} from "lib/parse-resume-from-pdf/types";
+} from "../types";
 import type { ResumeEducation } from "lib/redux/types";
 import { getSectionLinesByKeywords } from "lib/parse-resume-from-pdf/extract-resume-from-sections/lib/get-section-lines";
 import { divideSectionIntoSubsections } from "lib/parse-resume-from-pdf/extract-resume-from-sections/lib/subsections";
@@ -109,7 +109,7 @@ export const extractEducation = (sections: ResumeSectionToLines) => {
         "Courses: " +
           coursesLines
             .flat()
-            .map((item) => item.text)
+            .map((item: TextItem) => item.text)
             .join(" ")
       );
     }

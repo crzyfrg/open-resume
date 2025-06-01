@@ -1,8 +1,10 @@
 import type {
-  TextItems,
+  TextItem,
   TextScores,
   FeatureSet,
-} from "lib/parse-resume-from-pdf/types";
+} from "../../types";
+
+type TextItems = TextItem[];
 
 const computeFeatureScores = (
   textItems: TextItems,

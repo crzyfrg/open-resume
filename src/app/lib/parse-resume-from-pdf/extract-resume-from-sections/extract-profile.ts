@@ -2,16 +2,16 @@ import type {
   ResumeSectionToLines,
   TextItem,
   FeatureSet,
-} from "lib/parse-resume-from-pdf/types";
-import { getSectionLinesByKeywords } from "lib/parse-resume-from-pdf/extract-resume-from-sections/lib/get-section-lines";
+} from "../types";
+import { getSectionLinesByKeywords } from "./lib/get-section-lines";
 import {
   isBold,
   hasNumber,
   hasComma,
   hasLetter,
   hasLetterAndIsAllUpperCase,
-} from "lib/parse-resume-from-pdf/extract-resume-from-sections/lib/common-features";
-import { getTextWithHighestFeatureScore } from "lib/parse-resume-from-pdf/extract-resume-from-sections/lib/feature-scoring-system";
+} from "./lib/common-features";
+import { getTextWithHighestFeatureScore } from "./lib/feature-scoring-system";
 
 // Name
 export const matchOnlyLetterSpaceOrPeriod = (item: TextItem) =>
@@ -156,12 +156,12 @@ export const extractProfile = (sections: ResumeSectionToLines) => {
   const summaryLines = getSectionLinesByKeywords(sections, ["summary"]);
   const summarySection = summaryLines
     .flat()
-    .map((textItem) => textItem.text)
+    .map((textItem: TextItem) => textItem.text)
     .join(" ");
   const objectiveLines = getSectionLinesByKeywords(sections, ["objective"]);
   const objectiveSection = objectiveLines
     .flat()
-    .map((textItem) => textItem.text)
+    .map((textItem: TextItem) => textItem.text)
     .join(" ");
 
   return {

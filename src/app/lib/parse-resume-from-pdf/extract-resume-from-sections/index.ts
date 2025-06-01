@@ -1,10 +1,10 @@
-import type { Resume } from "lib/redux/types";
-import type { ResumeSectionToLines } from "lib/parse-resume-from-pdf/types";
-import { extractProfile } from "lib/parse-resume-from-pdf/extract-resume-from-sections/extract-profile";
-import { extractEducation } from "lib/parse-resume-from-pdf/extract-resume-from-sections/extract-education";
-import { extractWorkExperience } from "lib/parse-resume-from-pdf/extract-resume-from-sections/extract-work-experience";
-import { extractProject } from "lib/parse-resume-from-pdf/extract-resume-from-sections/extract-project";
-import { extractSkills } from "lib/parse-resume-from-pdf/extract-resume-from-sections/extract-skills";
+import type { Resume } from "../../redux/types";
+import type { ResumeSectionToLines } from "../types";
+import { extractProfile } from "./extract-profile";
+import { extractEducation } from "./extract-education";
+import { extractWorkExperience } from "./extract-work-experience";
+import { extractProject } from "./extract-project";
+import { extractSkills } from "./extract-skills";
 
 /**
  * Step 4. Extract resume from sections.

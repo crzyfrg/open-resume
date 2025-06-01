@@ -1,14 +1,83 @@
-// Import PDF.js with dynamic import for Next.js compatibility
-import * as pdfjs from "pdfjs-dist";
+// Import types
+import type { TextItem } from './types';
 
-// Set worker source for PDF.js
+// Import PDF.js types
+import type { PDFJSStatic } from 'pdfjs-dist';
+
+// Re-export types for backward compatibility
+export type { TextItem } from './types';
+
+export type TextItems = TextItem[];
+type PdfjsTextItem = {
+  str: string;
+  dir: string;
+  transform: number[];
+  width: number;
+  height: number;
+  fontName: string;
+  [key: string]: any;
+};
+
+type PDFDocumentLoadingTask = {
+  promise: Promise<{
+    numPages: number;
+    getPage: (pageNumber: number) => Promise<{
+      getTextContent: () => Promise<{ items: PdfjsTextItem[] }>;
+      getOperatorList: () => Promise<any>;
+      commonObjs: { get: (key: string) => { name: string } };
+    }>;
+  }>;
+};
+
+// Dynamic import for PDF.js to avoid server-side issues
+let pdfjs: PDFJSStatic;
+
+// Get PDF.js version from environment variable or use default
+const pdfjsVersion = process.env.NEXT_PUBLIC_PDFJS_VERSION || '3.11.174';
+
+// Create a mock PDF.js implementation
+const createMockPdfJs = (): PDFJSStatic => {
+  return {
+    getDocument: (source: string | ArrayBuffer | Uint8Array): PDFDocumentLoadingTask => ({
+      promise: Promise.resolve({
+        numPages: 0,
+        getPage: () => Promise.resolve({
+          getTextContent: () => Promise.resolve({ 
+            items: [] as PdfjsTextItem[],
+            styles: {}
+          }),
+          getOperatorList: () => Promise.resolve(),
+          commonObjs: { 
+            get: () => ({ name: 'Arial' }) 
+          }
+        })
+      })
+    }),
+    GlobalWorkerOptions: {
+      workerSrc: `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsVersion}/pdf.worker.min.js`
+    }
+  } as unknown as PDFJSStatic;
+};
+
+// Initialize PDF.js based on the environment
 if (typeof window !== 'undefined') {
-  // In a browser environment, use the worker from CDN
-  pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+  try {
+    // In browser environment, use the full PDF.js library
+    const pdfjsLib = require('pdfjs-dist');
+    
+    // Set up the PDF.js worker from CDN
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsVersion}/pdf.worker.min.js`;
+    
+    pdfjs = pdfjsLib;
+  } catch (error) {
+    console.error('Failed to load PDF.js:', error);
+    // Fallback to mock implementation if loading fails
+    pdfjs = createMockPdfJs();
+  }
+} else {
+  // Server-side rendering - use mock implementation
+  pdfjs = createMockPdfJs();
 }
-
-import type { TextItem as PdfjsTextItem } from "pdfjs-dist/types/src/display/api";
-import type { TextItem, TextItems } from "lib/parse-resume-from-pdf/types";
 
 /**
  * Step 1: Read pdf and output textItems by concatenating results from each page.
@@ -37,7 +106,7 @@ export const readPdf = async (fileUrl: string): Promise<TextItems> => {
     const commonObjs = page.commonObjs;
 
     // Convert Pdfjs TextItem type to new TextItem type
-    const pageTextItems = textContent.items.map((item) => {
+    const pageTextItems = textContent.items.map((item: PdfjsTextItem) => {
       const {
         str: text,
         dir, // Remove text direction
@@ -45,6 +114,10 @@ export const readPdf = async (fileUrl: string): Promise<TextItems> => {
         fontName: pdfFontName,
         ...otherProps
       } = item as PdfjsTextItem;
+      
+      if (!transform) {
+        throw new Error('Text item is missing transform property');
+      }
 
       // Extract x, y position of text item from transform.
       // As a side note, origin (0, 0) is bottom left.
@@ -62,12 +135,15 @@ export const readPdf = async (fileUrl: string): Promise<TextItems> => {
       // Note "-­‐" is "-&#x00AD;‐" with a soft hyphen in between. It is not the same as "--"
       const newText = text.replace(/-­‐/g, "-");
 
-      const newItem = {
+      const newItem: TextItem = {
         ...otherProps,
         fontName,
         text: newText,
         x,
         y,
+        width: item.width || 0,
+        height: item.height || 0,
+        hasEOL: false // Default value, will be updated when processing lines
       };
       return newItem;
     });
@@ -84,7 +160,7 @@ export const readPdf = async (fileUrl: string): Promise<TextItems> => {
 
   // Filter out empty space textItem noise
   const isEmptySpace = (textItem: TextItem) =>
-    !textItem.hasEOL && textItem.text.trim() === "";
+    !('hasEOL' in textItem && textItem.hasEOL) && textItem.text.trim() === "";
   textItems = textItems.filter((textItem) => !isEmptySpace(textItem));
 
   return textItems;

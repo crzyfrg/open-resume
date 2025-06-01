@@ -1,20 +1,25 @@
-import { isBold } from "lib/parse-resume-from-pdf/extract-resume-from-sections/lib/common-features";
+import { isBold } from "../lib/parse-resume-from-pdf/extract-resume-from-sections/lib/common-features";
 import {
   Badge,
   Heading,
   Link,
   Paragraph,
   Table,
-} from "components/documentation";
-import type {
-  Line,
-  Lines,
-  ResumeSectionToLines,
-  TextItem,
-  TextItems,
-  TextScores,
-} from "lib/parse-resume-from-pdf/types";
-import { extractProfile } from "lib/parse-resume-from-pdf/extract-resume-from-sections/extract-profile";
+} from "@/components/documentation";
+import type { TextItem } from "../lib/parse-resume-from-pdf/types";
+import { extractProfile } from "../lib/parse-resume-from-pdf/extract-resume-from-sections/extract-profile";
+
+type Line = TextItem[];
+type Lines = Line[];
+type TextItems = TextItem[];
+type ResumeSectionToLines = Record<string, Line[]>;
+
+// Define a type for text items with scores
+type ScoredTextItem = {
+  text: string;
+  score: number;
+  match: boolean;
+};
 
 export const ResumeParserAlgorithmArticle = ({
   textItems,
@@ -68,7 +73,9 @@ export const ResumeParserAlgorithmArticle = ({
   ];
 
   const { profile, profileScores } = extractProfile(sections);
-  const Scores = ({ scores }: { scores: TextScores }) => {
+  
+  // Define the Scores component with proper typing
+  const Scores = ({ scores }: { scores: ScoredTextItem[] }) => {
     return (
       <>
         {scores

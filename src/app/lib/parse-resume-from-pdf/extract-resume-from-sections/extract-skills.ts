@@ -1,12 +1,13 @@
-import type { ResumeSkills } from "lib/redux/types";
-import type { ResumeSectionToLines } from "lib/parse-resume-from-pdf/types";
-import { deepClone } from "lib/deep-clone";
-import { getSectionLinesByKeywords } from "lib/parse-resume-from-pdf/extract-resume-from-sections/lib/get-section-lines";
-import { initialFeaturedSkills } from "lib/redux/resumeSlice";
+import type { ResumeSkills } from "../../redux/types";
+import type { ResumeSectionToLines, TextItem } from "../types";
+// Simple deep clone implementation using JSON
+const deepClone = <T>(obj: T): T => JSON.parse(JSON.stringify(obj));
+import { getSectionLinesByKeywords } from "./lib/get-section-lines";
+import { initialFeaturedSkills } from "../../redux/resumeSlice";
 import {
   getBulletPointsFromLines,
   getDescriptionsLineIdx,
-} from "lib/parse-resume-from-pdf/extract-resume-from-sections/lib/bullet-points";
+} from "./lib/bullet-points";
 
 export const extractSkills = (sections: ResumeSectionToLines) => {
   const lines = getSectionLinesByKeywords(sections, ["skill"]);
@@ -19,7 +20,7 @@ export const extractSkills = (sections: ResumeSectionToLines) => {
     const featuredSkillsLines = lines.slice(0, descriptionsLineIdx);
     const featuredSkillsTextItems = featuredSkillsLines
       .flat()
-      .filter((item) => item.text.trim())
+      .filter((item: TextItem) => item.text.trim())
       .slice(0, 6);
     for (let i = 0; i < featuredSkillsTextItems.length; i++) {
       featuredSkills[i].skill = featuredSkillsTextItems[i].text;

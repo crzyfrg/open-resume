@@ -1,17 +1,30 @@
 "use client";
 import { useState, useEffect } from "react";
 import dynamic from 'next/dynamic';
-import { readPdf } from "lib/parse-resume-from-pdf/read-pdf";
-import type { TextItems } from "lib/parse-resume-from-pdf/types";
-import { groupTextItemsIntoLines } from "lib/parse-resume-from-pdf/group-text-items-into-lines";
-import { groupLinesIntoSections } from "lib/parse-resume-from-pdf/group-lines-into-sections";
-import { extractResumeFromSections } from "lib/parse-resume-from-pdf/extract-resume-from-sections";
+import { readPdf } from "../lib/parse-resume-from-pdf/read-pdf";
+import type { TextItem } from "../lib/parse-resume-from-pdf/types";
+import { groupTextItemsIntoLines } from "../lib/parse-resume-from-pdf/group-text-items-into-lines";
+import { groupLinesIntoSections } from "../lib/parse-resume-from-pdf/group-lines-into-sections";
+import { extractResumeFromSections } from "../lib/parse-resume-from-pdf/extract-resume-from-sections";
+
+type TextItems = TextItem[];
+type ResumeSectionToLines = Record<string, TextItem[][]>;
 import { ResumeDropzone } from "components/ResumeDropzone";
 import { cx } from "lib/cx";
 import { Heading, Link, Paragraph } from "components/documentation";
 import { FlexboxSpacer } from "components/FlexboxSpacer";
 import type { Resume } from "lib/redux/types";
-import type { ResumeSectionToLines } from "lib/parse-resume-from-pdf/types";
+
+// Only import PDF.js in the browser
+const loadPdfJs = () => {
+  if (typeof window === 'undefined') return null;
+  try {
+    return require('pdfjs-dist/build/pdf');
+  } catch (error) {
+    console.error('Failed to load PDF.js:', error);
+    return null;
+  }
+};
 
 // Define prop types for components
 interface ResumeTableProps {
