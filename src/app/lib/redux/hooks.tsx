@@ -35,9 +35,11 @@ export const useSaveStateToLocalStorageOnChange = () => {
 
 export const useSetInitialStore = () => {
   const dispatch = useAppDispatch();
+  
   useEffect(() => {
     const state = loadStateFromLocalStorage();
     if (!state) return;
+    
     if (state.resume) {
       // We merge the initial state with the stored state to ensure
       // backward compatibility, since new fields might be added to
@@ -48,6 +50,7 @@ export const useSetInitialStore = () => {
       ) as Resume;
       dispatch(setResume(mergedResumeState));
     }
+    
     if (state.settings) {
       const mergedSettingsState = deepMerge(
         initialSettings,
@@ -55,5 +58,5 @@ export const useSetInitialStore = () => {
       ) as Settings;
       dispatch(setSettings(mergedSettingsState));
     }
-  }, []);
+  }, [dispatch]); // Added dispatch to the dependency array
 };

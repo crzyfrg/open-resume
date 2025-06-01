@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import dynamic from 'next/dynamic';
 import { readPdf } from "lib/parse-resume-from-pdf/read-pdf";
 import type { TextItems } from "lib/parse-resume-from-pdf/types";
 import { groupTextItemsIntoLines } from "lib/parse-resume-from-pdf/group-text-items-into-lines";
@@ -8,9 +9,37 @@ import { extractResumeFromSections } from "lib/parse-resume-from-pdf/extract-res
 import { ResumeDropzone } from "components/ResumeDropzone";
 import { cx } from "lib/cx";
 import { Heading, Link, Paragraph } from "components/documentation";
-import { ResumeTable } from "resume-parser/ResumeTable";
 import { FlexboxSpacer } from "components/FlexboxSpacer";
-import { ResumeParserAlgorithmArticle } from "resume-parser/ResumeParserAlgorithmArticle";
+import type { Resume } from "lib/redux/types";
+import type { ResumeSectionToLines } from "lib/parse-resume-from-pdf/types";
+
+// Define prop types for components
+interface ResumeTableProps {
+  resume: Resume;
+}
+
+interface ResumeParserAlgorithmArticleProps {
+  textItems: TextItems;
+  lines: any[]; // Replace 'any[]' with proper Lines type if available
+  sections: ResumeSectionToLines;
+}
+
+// Dynamically import components that use browser APIs
+const ResumeTable = dynamic<ResumeTableProps>(
+  () => import('./ResumeTable').then((mod) => mod.ResumeTable),
+  { 
+    ssr: false,
+    loading: () => <div>Loading resume table...</div>
+  }
+);
+
+const ResumeParserAlgorithmArticle = dynamic<ResumeParserAlgorithmArticleProps>(
+  () => import('./ResumeParserAlgorithmArticle').then((mod) => mod.ResumeParserAlgorithmArticle),
+  { 
+    ssr: false,
+    loading: () => <div>Loading algorithm details...</div>
+  }
+);
 
 const RESUME_EXAMPLES = [
   {

@@ -38,7 +38,11 @@ const TableRow = ({
   </tr>
 );
 
-export const ResumeTable = ({ resume }: { resume: Resume }) => {
+interface ResumeTableProps {
+  resume: Resume;
+}
+
+export const ResumeTable = ({ resume }: ResumeTableProps) => {
   const educations =
     resume.educations.length === 0
       ? [deepClone(initialEducation)]
